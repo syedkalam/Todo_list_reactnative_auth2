@@ -51,12 +51,102 @@ cd Todo_list_reactnative_auth
 
 # Install dependencies
 npm install
-
-# Start the app
-npm start
 ```
 
-Then press `i` for iOS simulator or `a` for Android emulator.
+### Native Configuration (Required Before Running)
+
+Since `android/` and `ios/` folders are not in version control, you need to generate and configure them:
+
+```bash
+# Generate native folders
+npx react-native init SecuredTodoApp --template react-native-template-typescript
+# Or if folders already exist, skip this step
+```
+
+#### Android Configuration
+
+1. **Update `android/build.gradle`:**
+   ```gradle
+   buildscript {
+       ext {
+           buildToolsVersion = "33.0.2"
+           minSdkVersion = 24
+           compileSdkVersion = 33
+           targetSdkVersion = 33
+           ndkVersion = "23.1.7779620"
+           kotlinVersion = "1.9.10"
+       }
+   }
+   ```
+
+2. **Add Kotlin resolution in `android/build.gradle`** (inside `subprojects` block):
+   ```gradle
+   subprojects {
+       afterEvaluate { project ->
+           if (project.hasProperty("android")) {
+               android {
+                   buildFeatures {
+                       buildConfig = true
+                   }
+               }
+           }
+       }
+       project.configurations.all {
+           resolutionStrategy {
+               force "org.jetbrains.kotlin:kotlin-stdlib:1.9.10"
+               force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.10"
+               force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.10"
+           }
+       }
+   }
+   ```
+
+3. **Enable buildConfig in `android/app/build.gradle`:**
+   ```gradle
+   android {
+       buildFeatures {
+           buildConfig = true
+       }
+   }
+   ```
+
+#### iOS Configuration
+
+1. **Add Face ID permission to `ios/<AppName>/Info.plist`:**
+   ```xml
+   <key>NSFaceIDUsageDescription</key>
+   <string>Authenticate to add, update, or delete todos</string>
+   ```
+
+2. **Add Expo modules to `ios/Podfile`:**
+   ```ruby
+   require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
+
+   target 'YourAppName' do
+     use_expo_modules!
+     # ... rest of config
+   end
+   ```
+
+3. **Install pods:**
+   ```bash
+   cd ios && pod install && cd ..
+   ```
+
+### Running the App
+
+```bash
+# Start Metro bundler
+npm start
+
+# Run on Android
+npx react-native run-android
+
+# Run on iOS
+npx react-native run-ios
+```
+
+Or press `i` for iOS simulator or `a` for Android emulator from Metro.
 
 ### Running on a Physical Device
 
